@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'">
+<title>Phone Trial</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Phone Trial">
+<meta name="theme-color" content="#1f3a5f">
+<style>
+  :root { --bg: #f4f2ee; --ink: #1d1d1f; --soft: #5a5a60; --card: #ffffff; --line: #d8d4cc; --act: #1f3a5f; --act-ink: #ffffff; --warn: #8a2a12; --ok: #1d6b38; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #16171a; --ink: #eceae6; --soft: #a5a3a0; --card: #222429; --line: #3a3c42; --act: #7fa6d6; --act-ink: #10161f; --warn: #ff9b82; --ok: #7dd69a; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 20px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+         padding: max(16px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom)); }
+  main { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 30px; margin: 8px 0 12px; }
+  h2 { font-size: 24px; margin: 24px 0 8px; }
+  p { margin: 8px 0; }
+  .soft { color: var(--soft); font-size: 17px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin: 12px 0; }
+  .warn { color: var(--warn); font-weight: 600; }
+  .ok { color: var(--ok); font-weight: 600; }
+  button { display: block; width: 100%; min-height: 60px; margin: 12px 0; border: 0; border-radius: 14px; background: var(--act); color: var(--act-ink);
+           font: 600 21px/1.2 inherit; font-family: inherit; padding: 14px 16px; cursor: pointer; }
+  button.quiet { background: transparent; color: var(--act); border: 2px solid var(--act); }
+  button:disabled { opacity: .5; }
+  pre { white-space: pre-wrap; word-break: break-word; font: 15px/1.4 ui-monospace, Menlo, Consolas, monospace; background: var(--card);
+        border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 12px 0; user-select: text; -webkit-user-select: text; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <section data-view="home">
+    <h1>Phone Trial</h1>
+    <p class="soft">A throwaway test for the Build Manager build. It tries a few iPhone features and writes down what happened.</p>
+    <div class="card" id="install-note" hidden>
+      <p class="warn">First add this to your Home Screen.</p>
+      <p>In Safari tap the Share button, then <b>Add to Home Screen</b>. Then open <b>Phone Trial</b> from its icon. Notifications only work from the icon (iOS 16.4 or later).</p>
+    </div>
+    <p class="soft" id="env-line"></p>
+    <button data-go="subscribe">1. Turn on notifications</button>
+    <button data-go="results">2. Results</button>
+    <button data-go="passkey" class="quiet">Passkey check (for the PC)</button>
+    <h2>Storage test</h2>
+    <p class="soft">Only when the build asks. Run it once, as the very last step. After it, do not open this app again until wave 4.</p>
+    <button data-go="storage" class="quiet">Storage test (run once)</button>
+    <button data-go="read-storage" class="quiet">Read storage test (wave 4)</button>
+  </section>
+
+  <section data-view="subscribe" hidden>
+    <h1>Notifications</h1>
+    <p>Tap the button, then tap <b>Allow</b>. Then share the text below to your email so the PC can send you test pushes.</p>
+    <button id="subscribe-btn">Turn on notifications</button>
+    <p id="subscribe-status" class="soft"></p>
+    <pre id="subscription" hidden></pre>
+    <button id="subscription-share" hidden>Share this text</button>
+    <button data-go="home" class="quiet">Back</button>
+  </section>
+
+  <section data-view="results" hidden>
+    <h1>Results</h1>
+    <button id="results-share">Share the results</button>
+    <pre id="results-text">Loading…</pre>
+    <button data-go="home" class="quiet">Back</button>
+  </section>
+
+  <section data-view="storage" hidden>
+    <h1>Storage test</h1>
+    <p>This saves 20 notes and 5 large photos (about 12 MB) and asks the iPhone to keep them. It takes under a minute.</p>
+    <p class="warn">Run it once, as the last step. Then do not open this app again until the build asks you (wave 4).</p>
+    <button id="storage-run">Start the storage test</button>
+    <p id="storage-status" class="soft"></p>
+    <pre id="storage-text" hidden></pre>
+    <button id="storage-share" hidden>Share this text</button>
+    <p id="storage-done" class="ok" hidden>Done. Do not open this app again until the build asks you (wave 4).</p>
+    <button data-go="home" class="quiet" id="storage-back">Back</button>
+  </section>
+
+  <section data-view="read-storage" hidden>
+    <h1>Read storage test</h1>
+    <p>Wave 4 only. This counts what the iPhone kept from the storage test.</p>
+    <button id="read-run">Read it</button>
+    <pre id="read-text" hidden></pre>
+    <button id="read-share" hidden>Share this text</button>
+    <button data-go="home" class="quiet">Back</button>
+  </section>
+
+  <section data-view="passkey" hidden>
+    <h1>Passkey check</h1>
+    <p>Makes a test passkey for this page, then signs in with it. Follow what Windows or the phone asks.</p>
+    <button id="passkey-run">Try a passkey</button>
+    <pre id="passkey-text" hidden></pre>
+    <button data-go="home" class="quiet">Back</button>
+  </section>
+</main>
+<script src="shared.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
